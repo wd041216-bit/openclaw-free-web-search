@@ -11,3 +11,7 @@ local-search/searxng/settings.yml
 
 # Runtime path marker written by sync_openclaw_workspace.sh
 openclaw-workspace/skills/local-web-search/.project_root
+
+# Python bytecode
+__pycache__/
+*.pyc
