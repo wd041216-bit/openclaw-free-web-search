@@ -1,0 +1,13 @@
+.env
+.npm-cache/
+logs/
+.DS_Store
+local-search/searxng/searxng-master.tar.gz
+local-search/searxng/src/
+local-search/searxng/venv/
+
+# Generated settings (contains auto-generated secret_key — never commit)
+local-search/searxng/settings.yml
+
+# Runtime path marker written by sync_openclaw_workspace.sh
+openclaw-workspace/skills/local-web-search/.project_root
