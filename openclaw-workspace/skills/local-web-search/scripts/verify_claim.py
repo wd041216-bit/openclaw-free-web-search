@@ -380,41 +380,52 @@ def verify_claim(
     claim: str,
     num_sources: int = 5,
     searxng_url: str = DEFAULT_SEARXNG,
+    direct_urls: Optional[list] = None,
 ) -> dict:
     """
     Main entry point. Returns a structured verification result dict.
+    If direct_urls is provided, skip SearXNG search and verify those URLs directly.
     """
     print(f"\n🔍 Verifying: \"{claim}\"", file=sys.stderr)
     print(f"   Sources target: {num_sources}", file=sys.stderr)
 
-    # 1. Find working SearXNG
-    print("   Finding SearXNG instance...", file=sys.stderr)
-    working_searxng = _find_working_searxng(searxng_url)
-    if not working_searxng:
-        return {
-            "claim": claim,
-            "verdict": "UNVERIFIABLE",
-            "confidence": 0.0,
-            "error": "No SearXNG instance available. Start local SearXNG or check network.",
-            "sources_checked": 0,
-        }
-    print(f"   Using: {working_searxng}", file=sys.stderr)
-
-    # 2. Expand queries and collect URLs
-    queries = _expand_queries(claim)
-    per_query = max(2, num_sources // len(queries) + 1)
     all_results: list[dict] = []
-    seen_urls: set[str] = set()
 
-    for q in queries:
-        results = _search_searxng(q, working_searxng, num=per_query)
-        for r in results:
-            if r["url"] not in seen_urls:
-                seen_urls.add(r["url"])
-                all_results.append(r)
+    # ── Mode A: Direct URL list (no SearXNG needed) ──
+    if direct_urls:
+        print(f"   Mode: Direct URL verification ({len(direct_urls)} URLs)", file=sys.stderr)
+        for url in direct_urls[:num_sources]:
+            all_results.append({"url": url, "title": "", "snippet": "", "publishedDate": ""})
+    else:
+        # ── Mode B: SearXNG search ──
+        print("   Finding SearXNG instance...", file=sys.stderr)
+        working_searxng = _find_working_searxng(searxng_url)
+        if not working_searxng:
+            print("   ⚠️  No SearXNG instance available.", file=sys.stderr)
+            print("   💡 Tip: Start local SearXNG with ./start_local_search.sh", file=sys.stderr)
+            print("   💡 Or pass known URLs directly: --urls url1 url2 ...", file=sys.stderr)
+            return {
+                "claim": claim,
+                "verdict": "UNVERIFIABLE",
+                "confidence": 0.0,
+                "error": "No SearXNG instance available. Start local SearXNG or use --urls to provide sources directly.",
+                "sources_checked": 0,
+            }
+        print(f"   Using: {working_searxng}", file=sys.stderr)
 
-    # Deduplicate and cap
-    all_results = all_results[:num_sources]
+        queries = _expand_queries(claim)
+        per_query = max(2, num_sources // len(queries) + 1)
+        seen_urls: set[str] = set()
+
+        for q in queries:
+            results = _search_searxng(q, working_searxng, num=per_query)
+            for r in results:
+                if r["url"] not in seen_urls:
+                    seen_urls.add(r["url"])
+                    all_results.append(r)
+
+        all_results = all_results[:num_sources]
+
     print(f"   Collected {len(all_results)} unique sources to analyze...", file=sys.stderr)
 
     if not all_results:
@@ -529,7 +540,7 @@ def verify_claim(
         "sources_neutral": neutral_count,
         "summary": summary,
         "evidence": evidence,
-        "searxng_used": working_searxng,
+        "searxng_used": working_searxng if not direct_urls else "direct-url-mode",
         "scrapling_mode": (
             "FULL (Scrapling + StealthyFetcher)" if STEALTHY_AVAILABLE else
             "PARTIAL (Scrapling Fetcher only)" if SCRAPLING_AVAILABLE else
@@ -574,6 +585,8 @@ def main():
                         help="Number of sources to check (default: 5, max recommended: 10)")
     parser.add_argument("--searxng-url", default=DEFAULT_SEARXNG,
                         help=f"SearXNG base URL (default: {DEFAULT_SEARXNG})")
+    parser.add_argument("--urls", nargs="+", default=None,
+                        help="Skip SearXNG search and verify these URLs directly (space-separated)")
     parser.add_argument("--json", action="store_true",
                         help="Output raw JSON (machine-readable)")
     args = parser.parse_args()
@@ -589,6 +602,7 @@ def main():
         claim=args.claim,
         num_sources=args.sources,
         searxng_url=args.searxng_url,
+        direct_urls=args.urls,
     )
 
     if args.json:
