@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# SECURITY MANIFEST:
+#   Environment variables accessed: LOCAL_SEARCH_URL (optional), LOCAL_SEARCH_FALLBACK_URL (optional)
+#   External endpoints called: http://127.0.0.1:18080 (local SearXNG, default), https://searx.be (fallback only)
+#   Local files read: ~/.openclaw/workspace/skills/local-web-search/.project_root (path hint only)
+#   Local files written: none
+#   Data sent externally: search query string only — no personal data, no credentials
 """
 search_local_web.py  v3.0  — OpenClaw Free Web Search Skill
 ============================================================

@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# SECURITY MANIFEST:
+#   Environment variables accessed: none
+#   External endpoints called: any URL explicitly passed via --url argument (HTTP GET only)
+#   Local files read: none
+#   Local files written: none
+#   Data sent externally: standard HTTP GET request to the URL you provide — no POST data, no credentials
 """
 browse_page.py  v3.0  — OpenClaw Free Web Search Skill
 =======================================================

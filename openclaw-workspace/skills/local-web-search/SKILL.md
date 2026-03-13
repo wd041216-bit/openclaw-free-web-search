@@ -1,14 +1,19 @@
 ---
 name: local-web-search
 description: >
-  Free, private, real-time web search using a self-hosted local SearXNG instance.
-  Powered by Scrapling for anti-bot bypass (Cloudflare, JS-heavy sites).
-  Supports multi-engine parallel search (Bing/DuckDuckGo/Google/Startpage/Qwant),
-  intent-aware query expansion (Agent Reach), three-tier Browse/Viewing
-  (Fetcher → StealthyFetcher → DynamicFetcher), cross-engine anti-hallucination
-  validation, invalid page filtering, and automatic public fallback.
-  Zero API keys required. Use for current events, latest releases, research,
-  comparisons, tutorials, or any query requiring live internet search.
+  Free, private, real-time web search for OpenClaw — zero API keys required.
+  Powered by self-hosted SearXNG + Scrapling anti-bot engine. Multi-engine
+  parallel search (Bing/DuckDuckGo/Google/Startpage/Qwant), intent-aware
+  Agent Reach query expansion, three-tier Browse/Viewing (Fetcher →
+  StealthyFetcher → DynamicFetcher for Cloudflare/JS sites), cross-engine
+  anti-hallucination validation, and automatic public fallback.
+homepage: https://github.com/wd041216-bit/openclaw-free-web-search
+metadata:
+  clawdbot:
+    emoji: "🔍"
+    requires:
+      env: []
+    files: ["scripts/*"]
 ---
 
 # Local Free Web Search v3.0
@@ -16,6 +21,37 @@ description: >
 Use this skill when the user needs current or real-time web information.
 Powered by **Scrapling** (anti-bot) + **SearXNG** (self-hosted search).
 Zero API keys. Zero cost. Runs entirely locally.
+
+---
+
+## External Endpoints
+
+| Endpoint | Data Sent | Purpose |
+|---|---|---|
+| `http://127.0.0.1:18080` (local) | Search query string only | Local SearXNG instance |
+| `https://searx.be` (fallback only) | Search query string only | Public fallback when local SearXNG is down |
+| Any URL passed to `browse_page.py` | HTTP GET request only | Fetch page content for reading |
+
+No personal data, no credentials, no conversation history is ever sent to any endpoint.
+
+---
+
+## Security & Privacy
+
+- All search queries go to your **local SearXNG** instance by default — no third-party tracking
+- Public fallback (`searx.be`) is only used when local service is unavailable, and only receives the raw query string
+- `browse_page.py` makes standard HTTP GET requests to URLs you explicitly pass — no data is posted
+- Scrapling runs entirely locally — no cloud API calls, no telemetry
+- No API keys required or stored
+- No conversation history or personal data leaves your machine
+
+**Trust Statement:** This skill sends search queries to your local SearXNG instance (default) or `searx.be` (fallback). Page content is fetched via standard HTTP GET. No personal data is transmitted. Only install if you trust the public SearXNG instance at `searx.be` as a fallback.
+
+---
+
+## Model Invocation Note
+
+This skill is invoked autonomously by the agent when a query requires live web information. You can disable autonomous invocation by removing this skill from your workspace. The agent will only use this skill when it determines real-time information is needed.
 
 ---
 
